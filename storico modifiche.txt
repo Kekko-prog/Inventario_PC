@@ -1,0 +1,39 @@
+Pacchetto it.unina.inventario.eccezioni
+
+    DatabaseException.java (Nuovo)
+
+    ValidazioneException.java (Nuovo)
+
+Pacchetto it.unina.inventario.model
+
+    Componente.java (Aggiunta logica di validazione nel costruttore)
+
+    Fornitore.java (Aggiunta validazione dati ed email)
+
+    MemoriaRam.java (Aggiunta validazione dati specifici)
+
+    Processore.java (Aggiunta validazione dati specifici)
+
+    SchedaVideo.java (Aggiunta validazione dati specifici)
+
+Pacchetto it.unina.inventario.controller
+
+    FornitoreController.java (Aggiornata gestione eccezioni)
+
+    MemoriaRamController.java (Aggiornata gestione eccezioni)
+
+    ProcessoreController.java (Aggiornata gestione eccezioni)
+
+    SchedaVideoController.java (Aggiornata gestione eccezioni)
+
+Pacchetto it.unina.inventario.gui
+
+    FinestraPrincipale.java (Implementato nuovo layout con CardLayout e Sidebar)
+
+    PannelloFornitori.java (Aggiornata gestione eccezioni)
+
+    PannelloMemorieRam.java (Aggiornata gestione eccezioni)
+
+    PannelloProcessori.java (Aggiornata gestione eccezioni)
+
+    PannelloSchedeVideo.java (Aggiornata gestione eccezioni)
