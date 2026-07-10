@@ -1,14 +1,25 @@
 package it.unina.inventario.gui;
 
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
+
 import it.unina.inventario.controller.SchedaVideoController;
+import it.unina.inventario.eccezioni.DatabaseException;
+import it.unina.inventario.eccezioni.ValidazioneException;
 import it.unina.inventario.model.Fornitore;
 import it.unina.inventario.model.SchedaVideo;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
-import java.sql.SQLException;
-import java.util.List;
 
 public class PannelloSchedeVideo extends JPanel {
 
@@ -114,9 +125,12 @@ public class PannelloSchedeVideo extends JPanel {
         } catch (NumberFormatException errore) {
             JOptionPane.showMessageDialog(this, "Controlla i valori numerici inseriti (prezzo, quantita, VRAM).",
                     "Dati non validi", JOptionPane.ERROR_MESSAGE);
-        } catch (SQLException errore) {
-            JOptionPane.showMessageDialog(this, "Errore database: " + errore.getMessage(),
-                    "Errore", JOptionPane.ERROR_MESSAGE);
+        } catch (ValidazioneException errore) {
+            JOptionPane.showMessageDialog(this, errore.getMessage(),
+                    "Attenzione", JOptionPane.WARNING_MESSAGE);
+        } catch (DatabaseException errore) {
+            JOptionPane.showMessageDialog(this, errore.getMessage(),
+                    "Errore di Sistema", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -131,9 +145,9 @@ public class PannelloSchedeVideo extends JPanel {
         try {
             controller.eliminaSchedaVideo(id);
             aggiornaTabella();
-        } catch (SQLException errore) {
-            JOptionPane.showMessageDialog(this, "Errore database: " + errore.getMessage(),
-                    "Errore", JOptionPane.ERROR_MESSAGE);
+        } catch (DatabaseException errore) {
+            JOptionPane.showMessageDialog(this, errore.getMessage(),
+                    "Errore di Sistema", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -161,9 +175,9 @@ public class PannelloSchedeVideo extends JPanel {
                 comboFornitore.addItem(f);
             }
 
-        } catch (SQLException errore) {
-            JOptionPane.showMessageDialog(this, "Errore database: " + errore.getMessage(),
-                    "Errore", JOptionPane.ERROR_MESSAGE);
+        } catch (DatabaseException errore) {
+            JOptionPane.showMessageDialog(this, errore.getMessage(),
+                    "Errore di Sistema", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

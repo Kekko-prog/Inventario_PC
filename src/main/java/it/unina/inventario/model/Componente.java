@@ -1,6 +1,6 @@
 package it.unina.inventario.model;
 
-
+import it.unina.inventario.eccezioni.ValidazioneException;
 /**
  * Classe astratta che rappresenta un generico componente hardware.
  * Le sottoclassi Processore, SchedaVideo e MemoriaRam ereditano da questa.
@@ -17,7 +17,24 @@ public abstract class Componente {
     public Componente() {
     }
 
-    public Componente(String nome, double prezzo, int quantita, int fornitoreId) {
+    public Componente(String nome, double prezzo, int quantita, int fornitoreId) throws ValidazioneException {
+        
+        //Controlli per i componenti che verranno ereditati dalle sottoclassi Processore, SchedaVideo e MemoriaRam
+        if (nome == null || nome.trim().isEmpty()){
+            throw new ValidazioneException("Il nome non puo' essere vuoto.");
+        }
+        if (prezzo <= 0) {
+            throw new ValidazioneException("Il prezzo deve essere maggiore di zero.");
+        }
+        if (quantita < 0) {
+            throw new ValidazioneException("La quantita' non puo' essere negativa.");
+        }
+        if (fornitoreId == 0) {
+            throw new ValidazioneException("Selezionare un id fornitore valido");
+        }
+
+
+
         this.nome = nome;
         this.prezzo = prezzo;
         this.quantita = quantita;

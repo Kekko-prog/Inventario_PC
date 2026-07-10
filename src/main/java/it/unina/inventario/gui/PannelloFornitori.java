@@ -2,7 +2,6 @@ package it.unina.inventario.gui;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
-import java.sql.SQLException;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -16,6 +15,8 @@ import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
 import it.unina.inventario.controller.FornitoreController;
+import it.unina.inventario.eccezioni.DatabaseException;
+import it.unina.inventario.eccezioni.ValidazioneException;
 import it.unina.inventario.model.Fornitore;
 
 public class PannelloFornitori extends JPanel {
@@ -97,9 +98,12 @@ public class PannelloFornitori extends JPanel {
             svuotaCampi();
             aggiornaTabella();
 
-        } catch (SQLException errore) {
-            JOptionPane.showMessageDialog(this, "Errore database: " + errore.getMessage(),
-                    "Errore", JOptionPane.ERROR_MESSAGE);
+        } catch (DatabaseException errore) {
+            JOptionPane.showMessageDialog(this, errore.getMessage(),
+                    "Errore di Sistema", JOptionPane.ERROR_MESSAGE);
+        }catch (ValidazioneException errore) {
+            JOptionPane.showMessageDialog(this, errore.getMessage(),
+                    "Attenzione", JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -114,9 +118,9 @@ public class PannelloFornitori extends JPanel {
         try {
             controller.eliminaFornitore(id);
             aggiornaTabella();
-        } catch (SQLException errore) {
-            JOptionPane.showMessageDialog(this, "Errore database: " + errore.getMessage(),
-                    "Errore", JOptionPane.ERROR_MESSAGE);
+        } catch (DatabaseException errore) {
+            JOptionPane.showMessageDialog(this, errore.getMessage(),
+                    "Errore di Sistema", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -135,18 +139,18 @@ public class PannelloFornitori extends JPanel {
                         f.getId(), f.getNome(), f.getTelefono(), f.getEmail()
                 });
             }
-        } catch (SQLException errore) {
-            JOptionPane.showMessageDialog(this, "Errore database: " + errore.getMessage(),
-                    "Errore", JOptionPane.ERROR_MESSAGE);
+        } catch (DatabaseException errore) {
+            JOptionPane.showMessageDialog(this, errore.getMessage(),
+                    "Errore di Sistema", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     public List<Fornitore> ottieniListaFornitori() {
         try {
             return controller.elencaFornitori();
-        } catch (SQLException errore) {
-            JOptionPane.showMessageDialog(this, "Errore database: " + errore.getMessage(),
-                    "Errore", JOptionPane.ERROR_MESSAGE);
+        } catch (DatabaseException errore) {
+            JOptionPane.showMessageDialog(this, errore.getMessage(),
+                    "Errore di Sistema", JOptionPane.ERROR_MESSAGE);
             return List.of();
         }
     }

@@ -1,5 +1,7 @@
 package it.unina.inventario.model;
 
+import it.unina.inventario.eccezioni.ValidazioneException;
+
 public class Fornitore {
 
     private int id;
@@ -10,7 +12,21 @@ public class Fornitore {
     public Fornitore() {
     }
 
-    public Fornitore(String nome, String telefono, String email) {
+    public Fornitore(String nome, String telefono, String email) throws ValidazioneException {
+        if (nome == null || nome.trim().isBlank()) {
+            throw new ValidazioneException("Il nome del fornitore è obbligatorio.");
+        }
+        if (telefono == null || telefono.trim().isBlank()) {
+            throw new ValidazioneException("Il numero di telefono è obbligatorio.");
+        }
+        if (email == null || email.trim().isBlank()) {
+            throw new ValidazioneException("L'indirizzo email è obbligatorio.");
+        }
+        if (!email.contains("@") || !email.contains(".")) {
+            throw new ValidazioneException("L'email deve contenere almeno una '@' e un punto (es. info@fornitore.com).");
+        }
+        
+        
         this.nome = nome;
         this.telefono = telefono;
         this.email = email;
