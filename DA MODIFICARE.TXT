@@ -1,6 +1,0 @@
-quando provo ad aggiungere un nuovo "oggetto all'interfaccia, deve rispetrtare il tipo"
-    ESEMPIO
-        ok solo il tipo (DDR4/DDR5) deve essere rispettato
-
-        rendere la gui ancora piu semplice
-        porcodio

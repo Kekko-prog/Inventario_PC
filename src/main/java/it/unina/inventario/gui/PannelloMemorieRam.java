@@ -2,9 +2,7 @@ package it.unina.inventario.gui;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
-import java.util.List;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -16,8 +14,6 @@ import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
 import it.unina.inventario.controller.MemoriaRamController;
-import it.unina.inventario.eccezioni.DatabaseException;
-import it.unina.inventario.eccezioni.ValidazioneException;
 import it.unina.inventario.model.Fornitore;
 import it.unina.inventario.model.MemoriaRam;
 
@@ -26,148 +22,111 @@ public class PannelloMemorieRam extends JPanel {
     private final MemoriaRamController controller = new MemoriaRamController();
     private final PannelloFornitori pannelloFornitori;
 
-    private JTable tabella;
-    private DefaultTableModel modelloTabella;
+    private final DefaultTableModel modelloTabella;
+    private final JTable tabella;
 
-    private JTextField campoNome;
-    private JTextField campoPrezzo;
-    private JTextField campoQuantita;
-    private JTextField campoCapacita;
-    private JTextField campoTipoMemoria;
-    private JComboBox<Fornitore> comboFornitore;
+    private final JTextField campoNome = new JTextField();
+    private final JTextField campoPrezzo = new JTextField();
+    private final JTextField campoQuantita = new JTextField();
+    private final JTextField campoCapacita = new JTextField();
+    private final JTextField campoTipoMemoria = new JTextField();
+    private final JComboBox<Fornitore> comboFornitore = new JComboBox<>();
 
     public PannelloMemorieRam(PannelloFornitori pannelloFornitori) {
         this.pannelloFornitori = pannelloFornitori;
         setLayout(new BorderLayout());
-        creaTabella();
-        creaFormInserimento();
+
+        modelloTabella = new DefaultTableModel(
+                new Object[]{"ID", "Nome", "Prezzo", "Quantita", "Capacita (GB)", "Tipo", "Fornitore"}, 0);
+        tabella = new JTable(modelloTabella);
+        add(new JScrollPane(tabella), BorderLayout.CENTER);
+
+        JPanel form = new JPanel(new GridLayout(0, 2, 5, 5));
+        form.add(new JLabel("Nome:"));
+        form.add(campoNome);
+        form.add(new JLabel("Prezzo:"));
+        form.add(campoPrezzo);
+        form.add(new JLabel("Quantita:"));
+        form.add(campoQuantita);
+        form.add(new JLabel("Capacita (GB):"));
+        form.add(campoCapacita);
+        form.add(new JLabel("Tipo (DDR4/DDR5):"));
+        form.add(campoTipoMemoria);
+        form.add(new JLabel("Fornitore:"));
+        form.add(comboFornitore);
+
+        JButton bottoneSalva = new JButton("Salva");
+        bottoneSalva.addActionListener(e -> salva());
+
+        JButton bottoneElimina = new JButton("Elimina selezionato");
+        bottoneElimina.addActionListener(e -> elimina());
+
+        form.add(bottoneSalva);
+        form.add(bottoneElimina);
+
+        add(form, BorderLayout.SOUTH);
+
         aggiornaTabella();
     }
 
-    private void creaTabella() {
-        modelloTabella = new DefaultTableModel(
-                new Object[]{"ID", "Nome", "Prezzo", "Quantita", "Capacita (GB)", "Tipo", "Fornitore"}, 0) {
-            @Override
-            public boolean isCellEditable(int riga, int colonna) {
-                return false;
-            }
-        };
-        tabella = new JTable(modelloTabella);
-        add(new JScrollPane(tabella), BorderLayout.CENTER);
-    }
-
-    private void creaFormInserimento() {
-        JPanel pannelloForm = new JPanel(new GridLayout(0, 2, 5, 5));
-        pannelloForm.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        campoNome = new JTextField();
-        campoPrezzo = new JTextField();
-        campoQuantita = new JTextField();
-        campoCapacita = new JTextField();
-        campoTipoMemoria = new JTextField();
-        comboFornitore = new JComboBox<>();
-
-        pannelloForm.add(new JLabel("Nome:"));
-        pannelloForm.add(campoNome);
-        pannelloForm.add(new JLabel("Prezzo:"));
-        pannelloForm.add(campoPrezzo);
-        pannelloForm.add(new JLabel("Quantita:"));
-        pannelloForm.add(campoQuantita);
-        pannelloForm.add(new JLabel("Capacita (GB):"));
-        pannelloForm.add(campoCapacita);
-        pannelloForm.add(new JLabel("Tipo (DDR4/DDR5):"));
-        pannelloForm.add(campoTipoMemoria);
-        pannelloForm.add(new JLabel("Fornitore:"));
-        pannelloForm.add(comboFornitore);
-
-        JButton bottoneSalva = new JButton("Salva");
-        bottoneSalva.addActionListener(e -> salvaMemoriaRam());
-
-        JButton bottoneElimina = new JButton("Elimina selezionato");
-        bottoneElimina.addActionListener(e -> eliminaMemoriaSelezionata());
-
-        JButton bottoneAggiorna = new JButton("Aggiorna elenco");
-        bottoneAggiorna.addActionListener(e -> aggiornaTabella());
-
-        JPanel pannelloBottoni = new JPanel();
-        pannelloBottoni.add(bottoneSalva);
-        pannelloBottoni.add(bottoneElimina);
-        pannelloBottoni.add(bottoneAggiorna);
-
-        JPanel pannelloSud = new JPanel(new BorderLayout());
-        pannelloSud.add(pannelloForm, BorderLayout.CENTER);
-        pannelloSud.add(pannelloBottoni, BorderLayout.SOUTH);
-
-        add(pannelloSud, BorderLayout.SOUTH);
-    }
-
-    private void salvaMemoriaRam() {
+    private void salva() {
         try {
-            String nome = campoNome.getText().trim();
-            double prezzo = Double.parseDouble(campoPrezzo.getText().trim());
-            int quantita = Integer.parseInt(campoQuantita.getText().trim());
-            int capacita = Integer.parseInt(campoCapacita.getText().trim());
-            String tipoMemoria = campoTipoMemoria.getText().trim();
-
             Fornitore fornitoreScelto = (Fornitore) comboFornitore.getSelectedItem();
             if (fornitoreScelto == null) {
                 JOptionPane.showMessageDialog(this, "Seleziona un fornitore.");
                 return;
             }
 
-            MemoriaRam memoria = new MemoriaRam(nome, prezzo, quantita,
-                    fornitoreScelto.getId(), capacita, tipoMemoria);
+            MemoriaRam memoria = new MemoriaRam(
+                    campoNome.getText().trim(),
+                    Double.parseDouble(campoPrezzo.getText().trim()),
+                    Integer.parseInt(campoQuantita.getText().trim()),
+                    fornitoreScelto.getId(),
+                    Integer.parseInt(campoCapacita.getText().trim()),
+                    campoTipoMemoria.getText().trim());
 
             controller.aggiungiMemoriaRam(memoria);
-            svuotaCampi();
+
+            campoNome.setText("");
+            campoPrezzo.setText("");
+            campoQuantita.setText("");
+            campoCapacita.setText("");
+            campoTipoMemoria.setText("");
+
             aggiornaTabella();
 
         } catch (NumberFormatException errore) {
-            JOptionPane.showMessageDialog(this, "Controlla i valori numerici inseriti (prezzo, quantita, capacita).",
+            JOptionPane.showMessageDialog(this, "Controlla i valori numerici (prezzo, quantita, capacita).",
                     "Dati non validi", JOptionPane.ERROR_MESSAGE);
-        } catch (ValidazioneException errore) {
-            JOptionPane.showMessageDialog(this, errore.getMessage(),
-                    "Attenzione", JOptionPane.WARNING_MESSAGE);
-        } catch (DatabaseException errore) {
-            JOptionPane.showMessageDialog(this, errore.getMessage(),
-                    "Errore di Sistema", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception errore) {
+            JOptionPane.showMessageDialog(this, errore.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void eliminaMemoriaSelezionata() {
-        int rigaSelezionata = tabella.getSelectedRow();
-        if (rigaSelezionata == -1) {
+    private void elimina() {
+        int riga = tabella.getSelectedRow();
+        if (riga == -1) {
             JOptionPane.showMessageDialog(this, "Seleziona prima una memoria RAM dalla tabella.");
             return;
         }
-        int id = (int) modelloTabella.getValueAt(rigaSelezionata, 0);
 
         try {
+            int id = (int) modelloTabella.getValueAt(riga, 0);
             controller.eliminaMemoriaRam(id);
             aggiornaTabella();
-        } catch (DatabaseException errore) {
-            JOptionPane.showMessageDialog(this, errore.getMessage(),
-                    "Errore di Sistema", JOptionPane.ERROR_MESSAGE);
-        }
-    }
 
-    private void svuotaCampi() {
-        campoNome.setText("");
-        campoPrezzo.setText("");
-        campoQuantita.setText("");
-        campoCapacita.setText("");
-        campoTipoMemoria.setText("");
+        } catch (Exception errore) {
+            JOptionPane.showMessageDialog(this, errore.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     public void aggiornaTabella() {
         try {
             modelloTabella.setRowCount(0);
-            List<MemoriaRam> memorie = controller.elencaMemorieRam();
-            for (MemoriaRam m : memorie) {
+            for (MemoriaRam m : controller.elencaMemorieRam()) {
                 modelloTabella.addRow(new Object[]{
                         m.getId(), m.getNome(), m.getPrezzo(), m.getQuantita(),
-                        m.getCapacitaGb(), m.getTipoMemoria(), m.getNomeFornitore()
-                });
+                        m.getCapacitaGb(), m.getTipoMemoria(), m.getNomeFornitore()});
             }
 
             comboFornitore.removeAllItems();
@@ -175,9 +134,8 @@ public class PannelloMemorieRam extends JPanel {
                 comboFornitore.addItem(f);
             }
 
-        } catch (DatabaseException errore) {
-            JOptionPane.showMessageDialog(this, errore.getMessage(),
-                    "Errore di Sistema", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception errore) {
+            JOptionPane.showMessageDialog(this, errore.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

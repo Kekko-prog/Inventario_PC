@@ -2,9 +2,7 @@ package it.unina.inventario.gui;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
-import java.util.List;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -16,8 +14,6 @@ import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
 import it.unina.inventario.controller.SchedaVideoController;
-import it.unina.inventario.eccezioni.DatabaseException;
-import it.unina.inventario.eccezioni.ValidazioneException;
 import it.unina.inventario.model.Fornitore;
 import it.unina.inventario.model.SchedaVideo;
 
@@ -26,148 +22,111 @@ public class PannelloSchedeVideo extends JPanel {
     private final SchedaVideoController controller = new SchedaVideoController();
     private final PannelloFornitori pannelloFornitori;
 
-    private JTable tabella;
-    private DefaultTableModel modelloTabella;
+    private final DefaultTableModel modelloTabella;
+    private final JTable tabella;
 
-    private JTextField campoNome;
-    private JTextField campoPrezzo;
-    private JTextField campoQuantita;
-    private JTextField campoMemoriaVram;
-    private JTextField campoChipset;
-    private JComboBox<Fornitore> comboFornitore;
+    private final JTextField campoNome = new JTextField();
+    private final JTextField campoPrezzo = new JTextField();
+    private final JTextField campoQuantita = new JTextField();
+    private final JTextField campoMemoriaVram = new JTextField();
+    private final JTextField campoChipset = new JTextField();
+    private final JComboBox<Fornitore> comboFornitore = new JComboBox<>();
 
     public PannelloSchedeVideo(PannelloFornitori pannelloFornitori) {
         this.pannelloFornitori = pannelloFornitori;
         setLayout(new BorderLayout());
-        creaTabella();
-        creaFormInserimento();
+
+        modelloTabella = new DefaultTableModel(
+                new Object[]{"ID", "Nome", "Prezzo", "Quantita", "VRAM (GB)", "Chipset", "Fornitore"}, 0);
+        tabella = new JTable(modelloTabella);
+        add(new JScrollPane(tabella), BorderLayout.CENTER);
+
+        JPanel form = new JPanel(new GridLayout(0, 2, 5, 5));
+        form.add(new JLabel("Nome:"));
+        form.add(campoNome);
+        form.add(new JLabel("Prezzo:"));
+        form.add(campoPrezzo);
+        form.add(new JLabel("Quantita:"));
+        form.add(campoQuantita);
+        form.add(new JLabel("VRAM (GB):"));
+        form.add(campoMemoriaVram);
+        form.add(new JLabel("Chipset:"));
+        form.add(campoChipset);
+        form.add(new JLabel("Fornitore:"));
+        form.add(comboFornitore);
+
+        JButton bottoneSalva = new JButton("Salva");
+        bottoneSalva.addActionListener(e -> salva());
+
+        JButton bottoneElimina = new JButton("Elimina selezionato");
+        bottoneElimina.addActionListener(e -> elimina());
+
+        form.add(bottoneSalva);
+        form.add(bottoneElimina);
+
+        add(form, BorderLayout.SOUTH);
+
         aggiornaTabella();
     }
 
-    private void creaTabella() {
-        modelloTabella = new DefaultTableModel(
-                new Object[]{"ID", "Nome", "Prezzo", "Quantita", "VRAM (GB)", "Chipset", "Fornitore"}, 0) {
-            @Override
-            public boolean isCellEditable(int riga, int colonna) {
-                return false;
-            }
-        };
-        tabella = new JTable(modelloTabella);
-        add(new JScrollPane(tabella), BorderLayout.CENTER);
-    }
-
-    private void creaFormInserimento() {
-        JPanel pannelloForm = new JPanel(new GridLayout(0, 2, 5, 5));
-        pannelloForm.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        campoNome = new JTextField();
-        campoPrezzo = new JTextField();
-        campoQuantita = new JTextField();
-        campoMemoriaVram = new JTextField();
-        campoChipset = new JTextField();
-        comboFornitore = new JComboBox<>();
-
-        pannelloForm.add(new JLabel("Nome:"));
-        pannelloForm.add(campoNome);
-        pannelloForm.add(new JLabel("Prezzo:"));
-        pannelloForm.add(campoPrezzo);
-        pannelloForm.add(new JLabel("Quantita:"));
-        pannelloForm.add(campoQuantita);
-        pannelloForm.add(new JLabel("VRAM (GB):"));
-        pannelloForm.add(campoMemoriaVram);
-        pannelloForm.add(new JLabel("Chipset:"));
-        pannelloForm.add(campoChipset);
-        pannelloForm.add(new JLabel("Fornitore:"));
-        pannelloForm.add(comboFornitore);
-
-        JButton bottoneSalva = new JButton("Salva");
-        bottoneSalva.addActionListener(e -> salvaSchedaVideo());
-
-        JButton bottoneElimina = new JButton("Elimina selezionato");
-        bottoneElimina.addActionListener(e -> eliminaSchedaSelezionata());
-
-        JButton bottoneAggiorna = new JButton("Aggiorna elenco");
-        bottoneAggiorna.addActionListener(e -> aggiornaTabella());
-
-        JPanel pannelloBottoni = new JPanel();
-        pannelloBottoni.add(bottoneSalva);
-        pannelloBottoni.add(bottoneElimina);
-        pannelloBottoni.add(bottoneAggiorna);
-
-        JPanel pannelloSud = new JPanel(new BorderLayout());
-        pannelloSud.add(pannelloForm, BorderLayout.CENTER);
-        pannelloSud.add(pannelloBottoni, BorderLayout.SOUTH);
-
-        add(pannelloSud, BorderLayout.SOUTH);
-    }
-
-    private void salvaSchedaVideo() {
+    private void salva() {
         try {
-            String nome = campoNome.getText().trim();
-            double prezzo = Double.parseDouble(campoPrezzo.getText().trim());
-            int quantita = Integer.parseInt(campoQuantita.getText().trim());
-            int memoriaVram = Integer.parseInt(campoMemoriaVram.getText().trim());
-            String chipset = campoChipset.getText().trim();
-
             Fornitore fornitoreScelto = (Fornitore) comboFornitore.getSelectedItem();
             if (fornitoreScelto == null) {
                 JOptionPane.showMessageDialog(this, "Seleziona un fornitore.");
                 return;
             }
 
-            SchedaVideo scheda = new SchedaVideo(nome, prezzo, quantita,
-                    fornitoreScelto.getId(), memoriaVram, chipset);
+            SchedaVideo scheda = new SchedaVideo(
+                    campoNome.getText().trim(),
+                    Double.parseDouble(campoPrezzo.getText().trim()),
+                    Integer.parseInt(campoQuantita.getText().trim()),
+                    fornitoreScelto.getId(),
+                    Integer.parseInt(campoMemoriaVram.getText().trim()),
+                    campoChipset.getText().trim());
 
             controller.aggiungiSchedaVideo(scheda);
-            svuotaCampi();
+
+            campoNome.setText("");
+            campoPrezzo.setText("");
+            campoQuantita.setText("");
+            campoMemoriaVram.setText("");
+            campoChipset.setText("");
+
             aggiornaTabella();
 
         } catch (NumberFormatException errore) {
-            JOptionPane.showMessageDialog(this, "Controlla i valori numerici inseriti (prezzo, quantita, VRAM).",
+            JOptionPane.showMessageDialog(this, "Controlla i valori numerici (prezzo, quantita, VRAM).",
                     "Dati non validi", JOptionPane.ERROR_MESSAGE);
-        } catch (ValidazioneException errore) {
-            JOptionPane.showMessageDialog(this, errore.getMessage(),
-                    "Attenzione", JOptionPane.WARNING_MESSAGE);
-        } catch (DatabaseException errore) {
-            JOptionPane.showMessageDialog(this, errore.getMessage(),
-                    "Errore di Sistema", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception errore) {
+            JOptionPane.showMessageDialog(this, errore.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void eliminaSchedaSelezionata() {
-        int rigaSelezionata = tabella.getSelectedRow();
-        if (rigaSelezionata == -1) {
+    private void elimina() {
+        int riga = tabella.getSelectedRow();
+        if (riga == -1) {
             JOptionPane.showMessageDialog(this, "Seleziona prima una scheda video dalla tabella.");
             return;
         }
-        int id = (int) modelloTabella.getValueAt(rigaSelezionata, 0);
 
         try {
+            int id = (int) modelloTabella.getValueAt(riga, 0);
             controller.eliminaSchedaVideo(id);
             aggiornaTabella();
-        } catch (DatabaseException errore) {
-            JOptionPane.showMessageDialog(this, errore.getMessage(),
-                    "Errore di Sistema", JOptionPane.ERROR_MESSAGE);
-        }
-    }
 
-    private void svuotaCampi() {
-        campoNome.setText("");
-        campoPrezzo.setText("");
-        campoQuantita.setText("");
-        campoMemoriaVram.setText("");
-        campoChipset.setText("");
+        } catch (Exception errore) {
+            JOptionPane.showMessageDialog(this, errore.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     public void aggiornaTabella() {
         try {
             modelloTabella.setRowCount(0);
-            List<SchedaVideo> schede = controller.elencaSchedeVideo();
-            for (SchedaVideo s : schede) {
+            for (SchedaVideo s : controller.elencaSchedeVideo()) {
                 modelloTabella.addRow(new Object[]{
                         s.getId(), s.getNome(), s.getPrezzo(), s.getQuantita(),
-                        s.getMemoriaVram(), s.getChipset(), s.getNomeFornitore()
-                });
+                        s.getMemoriaVram(), s.getChipset(), s.getNomeFornitore()});
             }
 
             comboFornitore.removeAllItems();
@@ -175,9 +134,8 @@ public class PannelloSchedeVideo extends JPanel {
                 comboFornitore.addItem(f);
             }
 
-        } catch (DatabaseException errore) {
-            JOptionPane.showMessageDialog(this, errore.getMessage(),
-                    "Errore di Sistema", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception errore) {
+            JOptionPane.showMessageDialog(this, errore.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
